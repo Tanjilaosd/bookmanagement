@@ -41,20 +41,20 @@ export const BookProvider = ({children}) => {
             setLoading(true)
             setError(null)
             const params = new URLSearchParams();
-            object.entries(filters).forEach(([Key,value]) => {
+            Object.entries(filters).forEach(([Key,value]) => {
                 if( value !== ""){
                     params.append(Key,value)
                 }
             })
 
-            const response = await axios.get('http://localhost:5000/books')
+            const response = await axios.get(`http://localhost:5000/books?${params}`)
            setBooks(response.data.books)
            setPagenation({
           currentPage:response.data.currentPage,
           totalBooks:response.data.totalBooks,
-          totalPages:response.data.totalBooks
+          totalPages:response.data.totalPages
            })
-
+           
 
           
 
@@ -70,7 +70,7 @@ export const BookProvider = ({children}) => {
 
 
  const clearCurrentBook = useCallback(()=>{
-    setBooks(null)
+    setCurrentBook(null)
  },[])
 
  const updateFilters = useCallback((newFilters) => {
@@ -80,9 +80,35 @@ export const BookProvider = ({children}) => {
         page:newFilters.hasOwnProperty("page") ? newFilters.page : 1,
     }))
  },[])
+
+ const fetchBookDetails = useCallback( async(bookId) =>{
+    try {
+        setLoading(null)
+        setError(null)
+
+        const response = await axios.get(`http://localhost:5000/books/${bookId}`)
+        setCurrentBook(response.data);
+        return response.data
+        
+    } catch (error) {
+        setError(error.message)
+        throw error
+        
+    }finally {
+        setLoading(false)
+    }
+
+
+ },[])
+
+
+
  useEffect(()=>{
         fetchBook()
     },[filters])
+
+    
+
 
 
 
@@ -91,7 +117,7 @@ export const BookProvider = ({children}) => {
 
 
     const value = {
-        books,currentBook,loading,error,filters,pagination,fetchBook,clearCurrentBook,updateFilters
+        books,currentBook,loading,error,filters,pagination,fetchBook,clearCurrentBook,updateFilters,fetchBookDetails
     }
 
 
